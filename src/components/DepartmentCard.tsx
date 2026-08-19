@@ -24,13 +24,16 @@ interface DepartmentCardProps {
 export const DepartmentCard: React.FC<DepartmentCardProps> = ({
   department,
   probability,
+  userRank,
   isInPreferences,
   onOpenTrendModal,
   onTogglePreference,
 }) => {
   const sortedHistory = [...department.history].sort((a, b) => a.year - b.year);
-  const latest2024 = sortedHistory[sortedHistory.length - 2] || sortedHistory[sortedHistory.length - 1];
-  const oldest2020 = sortedHistory[0];
+  const latest2024 = sortedHistory.find((h) => h.year === 2024) || sortedHistory[sortedHistory.length - 2] || sortedHistory[sortedHistory.length - 1];
+  const oldest2020 = sortedHistory.find((h) => h.year === 2020 && h.baseRank > 0) || sortedHistory[0];
+
+  const hasRank = userRank && userRank > 0;
 
   return (
     <div className="group relative rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm hover:shadow-xl hover:border-brand-500/40 dark:hover:border-brand-500/40 transition-all duration-200 flex flex-col justify-between">
@@ -90,12 +93,20 @@ export const DepartmentCard: React.FC<DepartmentCardProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-              %{probability.percentage}
-            </span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${probability.categoryColor}`}>
-              {probability.categoryTitle.split('/')[0].trim()}
-            </span>
+            {hasRank ? (
+              <>
+                <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  %{probability.percentage}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${probability.categoryColor}`}>
+                  {probability.categoryTitle.split('/')[0].trim()}
+                </span>
+              </>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                Sıralama Bekleniyor
+              </span>
+            )}
           </div>
         </div>
 
@@ -104,13 +115,13 @@ export const DepartmentCard: React.FC<DepartmentCardProps> = ({
           <div>
             <span className="text-slate-400 block text-[11px]">2024 Taban Sıra</span>
             <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-              {latest2024.baseRank.toLocaleString('tr-TR')}.
+              {latest2024.baseRank > 0 ? `${latest2024.baseRank.toLocaleString('tr-TR')}.` : 'Dolmadı / Veri Yok'}
             </span>
           </div>
           <div className="text-right">
             <span className="text-slate-400 block text-[11px]">2024 Taban Puan</span>
             <span className="font-extrabold text-sm text-slate-700 dark:text-slate-300">
-              {latest2024.baseScore.toFixed(2)}
+              {latest2024.baseScore > 0 ? latest2024.baseScore.toFixed(2) : '-'}
             </span>
           </div>
         </div>
@@ -128,7 +139,7 @@ export const DepartmentCard: React.FC<DepartmentCardProps> = ({
             5 Yıllık Trend:
           </span>
           <span className="font-semibold text-slate-700 dark:text-slate-300">
-            {oldest2020.baseRank.toLocaleString('tr-TR')} → {latest2024.baseRank.toLocaleString('tr-TR')}
+            {oldest2020.baseRank > 0 ? oldest2020.baseRank.toLocaleString('tr-TR') : '-'} → {latest2024.baseRank > 0 ? latest2024.baseRank.toLocaleString('tr-TR') : '-'}
           </span>
         </div>
 

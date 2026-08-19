@@ -1,5 +1,5 @@
 import React from 'react';
-import { Department, UserScores } from '../types';
+import { Department, UserScores, ScoreType } from '../types';
 import { calculateProbability } from '../utils/probability';
 import {
   ListOrdered,
@@ -30,16 +30,13 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
   onOpenTrendModal,
   onExploreMore,
 }) => {
-  const activeRank =
-    userScores.activeScoreType === 'SAY'
-      ? userScores.sayRank
-      : userScores.activeScoreType === 'EA'
-      ? userScores.eaRank
-      : userScores.activeScoreType === 'SOZ'
-      ? userScores.sozRank
-      : userScores.activeScoreType === 'DIL'
-      ? userScores.dilRank
-      : userScores.tytRank || 25000;
+  const getRankForDept = (scoreType: ScoreType): number => {
+    if (scoreType === 'SAY') return userScores.sayRank || 0;
+    if (scoreType === 'EA') return userScores.eaRank || 0;
+    if (scoreType === 'SOZ') return userScores.sozRank || 0;
+    if (scoreType === 'DIL') return userScores.dilRank || 0;
+    return userScores.tytRank || 0;
+  };
 
   // Sıralama Değiştirme
   const moveItem = (index: number, direction: 'up' | 'down') => {
@@ -80,15 +77,18 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
       'data:text/json;charset=utf-8,' +
       encodeURIComponent(
         JSON.stringify(
-          preferences.map((p, i) => ({
-            sira: i + 1,
-            kod: p.code,
-            universite: p.universityName,
-            bolum: p.departmentName,
-            sehir: p.city,
-            puanTuru: p.scoreType,
-            ihtimal: calculateProbability(activeRank, p).percentage,
-          })),
+          preferences.map((p, i) => {
+            const rank = getRankForDept(p.scoreType);
+            return {
+              sira: i + 1,
+              kod: p.code,
+              universite: p.universityName,
+              bolum: p.departmentName,
+              sehir: p.city,
+              puanTuru: p.scoreType,
+              ihtimal: rank > 0 ? calculateProbability(rank, p).percentage : 'Belirtilmedi',
+            };
+          }),
           null,
           2
         )
@@ -108,17 +108,22 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
     let dengeli = 0;
     let riskli = 0;
     let hayal = 0;
+    let evaluatedCount = 0;
 
     preferences.forEach((dept) => {
-      const prob = calculateProbability(activeRank, dept);
-      if (prob.category === 'garanti') garanti++;
-      else if (prob.category === 'ideal') ideal++;
-      else if (prob.category === 'dengeli') dengeli++;
-      else if (prob.category === 'riskli') riskli++;
-      else hayal++;
+      const rank = getRankForDept(dept.scoreType);
+      if (rank > 0) {
+        evaluatedCount++;
+        const prob = calculateProbability(rank, dept);
+        if (prob.category === 'garanti') garanti++;
+        else if (prob.category === 'ideal') ideal++;
+        else if (prob.category === 'dengeli') dengeli++;
+        else if (prob.category === 'riskli') riskli++;
+        else hayal++;
+      }
     });
 
-    const total = preferences.length || 1;
+    const total = evaluatedCount || preferences.length || 1;
     const hasEnoughGuaranteed = garanti >= 2 || (garanti + ideal) >= Math.ceil(total * 0.4);
 
     return {
@@ -127,6 +132,7 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
       dengeli,
       riskli,
       hayal,
+      evaluatedCount,
       garantiPct: Math.round((garanti / total) * 100),
       idealPct: Math.round((ideal / total) * 100),
       dengeliPct: Math.round((dengeli / total) * 100),
@@ -134,7 +140,7 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
       hayalPct: Math.round((hayal / total) * 100),
       hasEnoughGuaranteed,
     };
-  }, [preferences, activeRank]);
+  }, [preferences, userScores]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -283,8 +289,9 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
           <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {preferences.map((dept, index) => {
-                const probability = calculateProbability(activeRank, dept);
-                const latest2024 = dept.history[dept.history.length - 2] || dept.history[dept.history.length - 1];
+                const deptRank = getRankForDept(dept.scoreType);
+                const probability = calculateProbability(deptRank, dept);
+                const latest2024 = dept.history.find((h) => h.year === 2024) || dept.history[dept.history.length - 2] || dept.history[dept.history.length - 1];
 
                 return (
                   <div
@@ -321,7 +328,7 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
                           <span>•</span>
                           <span>{dept.scholarship}</span>
                           <span>•</span>
-                          <span>2024 Tabanı: {latest2024.baseRank.toLocaleString('tr-TR')}</span>
+                          <span>2024 Tabanı: {latest2024.baseRank > 0 ? `${latest2024.baseRank.toLocaleString('tr-TR')}.` : 'Dolmadı / Veri Yok'}</span>
                         </div>
                       </div>
                     </div>
@@ -331,14 +338,20 @@ export const PreferenceListBuilder: React.FC<PreferenceListBuilderProps> = ({
                       
                       {/* İhtimal Badge */}
                       <div className="text-left sm:text-right">
-                        <div className="flex items-center sm:justify-end space-x-1.5">
-                          <span className="text-sm font-black text-slate-900 dark:text-white">
-                            %{probability.percentage}
+                        {deptRank > 0 ? (
+                          <div className="flex items-center sm:justify-end space-x-1.5">
+                            <span className="text-sm font-black text-slate-900 dark:text-white">
+                              %{probability.percentage}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${probability.categoryColor}`}>
+                              {probability.categoryTitle.split('/')[0].trim()}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            Sıralama Bekleniyor
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${probability.categoryColor}`}>
-                            {probability.categoryTitle.split('/')[0].trim()}
-                          </span>
-                        </div>
+                        )}
                       </div>
 
                       {/* Yukarı / Aşağı Taşıma Butonları */}

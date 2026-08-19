@@ -62,6 +62,10 @@ export const TrendModal: React.FC<TrendModalProps> = ({
   if (!isOpen || !department || !probability) return null;
 
   const sortedHistory = [...department.history].sort((a, b) => a.year - b.year);
+  const latest2024 = sortedHistory.find((h) => h.year === 2024) || sortedHistory[sortedHistory.length - 2] || sortedHistory[sortedHistory.length - 1];
+  const oldest2020 = sortedHistory.find((h) => h.year === 2020 && h.baseRank > 0) || sortedHistory[0];
+  const proj2025 = sortedHistory.find((h) => h.year === 2025) || sortedHistory[sortedHistory.length - 1];
+
   const labels = sortedHistory.map((h) => `${h.year}${h.year === 2025 ? ' (Tahmin)' : ''}`);
 
   // Grafik verileri
@@ -138,54 +142,49 @@ export const TrendModal: React.FC<TrendModalProps> = ({
         cornerRadius: 10,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || '';
-            if (label) label += ': ';
-            if (context.parsed.y !== null) {
-              label +=
-                chartMode === 'rank'
-                  ? `${context.parsed.y.toLocaleString('tr-TR')}. Sıra`
-                  : `${context.parsed.y.toFixed(2)} Puan`;
+            const val = context.raw;
+            if (!val) return '';
+            if (chartMode === 'rank') {
+              return `${context.dataset.label}: ${val.toLocaleString('tr-TR')}. Sıra`;
             }
-            return label;
+            return `${context.dataset.label}: ${val.toFixed(2)} Puan`;
           },
         },
       },
     },
     scales: {
       y: {
-        // Sıralamada ters çevir: yukarıda 1. sıra, aşağıda daha büyük sayılar!
-        reverse: chartMode === 'rank',
-        grid: {
-          color: 'rgba(148, 163, 184, 0.1)',
-        },
+        reverse: chartMode === 'rank', // Sıralamada 1 numara en üstte gözükür
+        grid: { color: 'rgba(148, 163, 184, 0.1)' },
         ticks: {
-          font: { family: 'Inter', size: 11 },
           color: '#94a3b8',
-          callback: function (value: any) {
-            return chartMode === 'rank'
-              ? `${value.toLocaleString('tr-TR')}`
-              : `${value}`;
+          font: { family: 'Inter', size: 11 },
+          callback: function (val: any) {
+            if (chartMode === 'rank') {
+              return val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val;
+            }
+            return val;
           },
         },
       },
       x: {
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
         ticks: {
+          color: '#94a3b8',
           font: { family: 'Outfit', weight: 600 as const, size: 12 },
-          color: '#64748b',
         },
       },
     },
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
+      
+      {/* Modal Kutusu */}
+      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8">
         
-        {/* Üst Bar / Modal Header */}
-        <div className="p-5 sm:p-6 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-4">
+        {/* Modal Başlık Çubuğu */}
+        <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-brand-100 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
@@ -245,16 +244,29 @@ export const TrendModal: React.FC<TrendModalProps> = ({
               </div>
 
               <div className="my-3">
-                <div className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-emerald-300 via-teal-200 to-white bg-clip-text text-transparent">
-                  %{probability.percentage}
-                </div>
-                <span className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-extrabold ${probability.categoryColor}`}>
-                  {probability.categoryTitle}
-                </span>
+                {userRank > 0 ? (
+                  <>
+                    <div className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-emerald-300 via-teal-200 to-white bg-clip-text text-transparent">
+                      %{probability.percentage}
+                    </div>
+                    <span className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-extrabold ${probability.categoryColor}`}>
+                      {probability.categoryTitle}
+                    </span>
+                  </>
+                ) : (
+                  <div>
+                    <span className="text-xl font-bold text-amber-400 block">Sıralama Girilmedi</span>
+                    <span className="text-xs text-slate-400 mt-1 block">İhtimal hesaplaması için sıralamanızı girin.</span>
+                  </div>
+                )}
               </div>
 
               <div className="text-xs text-slate-400">
-                Risk Skoru: <span className="font-bold text-white">{probability.riskScore} / 10</span>
+                {userRank > 0 ? (
+                  <>Risk Skoru: <span className="font-bold text-white">{probability.riskScore} / 10</span></>
+                ) : (
+                  <span>Durum: Nötr</span>
+                )}
               </div>
             </div>
 
@@ -279,14 +291,14 @@ export const TrendModal: React.FC<TrendModalProps> = ({
                     {probability.trendText}
                   </div>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    2020: {sortedHistory[0].baseRank.toLocaleString('tr-TR')} → 2024:{' '}
-                    {sortedHistory[sortedHistory.length - 2].baseRank.toLocaleString('tr-TR')}
+                    2020: {oldest2020.baseRank > 0 ? oldest2020.baseRank.toLocaleString('tr-TR') : '-'} → 2024:{' '}
+                    {latest2024.baseRank > 0 ? latest2024.baseRank.toLocaleString('tr-TR') : '-'}
                   </span>
                 </div>
               </div>
 
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                2025 Tahmini: <span className="font-bold text-brand-600 dark:text-brand-400">{sortedHistory[sortedHistory.length - 1].baseRank.toLocaleString('tr-TR')}.</span>
+                2025 Tahmini: <span className="font-bold text-brand-600 dark:text-brand-400">{proj2025.baseRank > 0 ? `${proj2025.baseRank.toLocaleString('tr-TR')}.` : '-'}</span>
               </div>
             </div>
 
@@ -297,18 +309,27 @@ export const TrendModal: React.FC<TrendModalProps> = ({
               </span>
 
               <div className="my-3">
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  {probability.rankDiff >= 0 ? `+${probability.rankDiff.toLocaleString('tr-TR')}` : probability.rankDiff.toLocaleString('tr-TR')}
-                </div>
-                <span className={`text-xs font-bold ${probability.rankDiff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {probability.rankDiff >= 0
-                    ? `Tabanın %${Math.abs(probability.rankDiffPercentage)} önündesiniz`
-                    : `Tabanın %${Math.abs(probability.rankDiffPercentage)} gerisindesiniz`}
-                </span>
+                {userRank > 0 ? (
+                  <>
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                      {probability.rankDiff >= 0 ? `+${probability.rankDiff.toLocaleString('tr-TR')}` : probability.rankDiff.toLocaleString('tr-TR')}
+                    </div>
+                    <span className={`text-xs font-bold ${probability.rankDiff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                      {probability.rankDiff >= 0
+                        ? `Tabanın %${Math.abs(probability.rankDiffPercentage)} önündesiniz`
+                        : `Tabanın %${Math.abs(probability.rankDiffPercentage)} gerisindesiniz`}
+                    </span>
+                  </>
+                ) : (
+                  <div>
+                    <span className="text-base font-bold text-slate-700 dark:text-slate-300 block">Sıralama Girilmedi</span>
+                    <span className="text-xs text-slate-400">Kendi sıranızla karşılaştırmak için sıralama girin.</span>
+                  </div>
+                )}
               </div>
 
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                2024 Tabanı: {sortedHistory[sortedHistory.length - 2].baseRank.toLocaleString('tr-TR')}
+                2024 Tabanı: {latest2024.baseRank > 0 ? latest2024.baseRank.toLocaleString('tr-TR') : '-'}
               </div>
             </div>
 

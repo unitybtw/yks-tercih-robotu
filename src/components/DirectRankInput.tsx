@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScoreType, UserScores } from '../types';
 import { Target, ArrowRight, Zap, Award } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -39,12 +39,18 @@ export const DirectRankInput: React.FC<DirectRankInputProps> = ({
   const [scoreInput, setScoreInput] = useState<string>(initialScore > 0 ? initialScore.toString() : '');
   const [diplomaGrade, setDiplomaGrade] = useState<number>(userScores.diplomaGrade || 80);
 
-  const handleSelectScoreType = (type: ScoreType) => {
-    setScoreType(type);
-    const r = getRankForType(type);
-    const s = getScoreForType(type);
+  useEffect(() => {
+    const r = getRankForType(scoreType);
+    const s = getScoreForType(scoreType);
     setRankInput(r > 0 ? r.toString() : '');
     setScoreInput(s > 0 ? s.toString() : '');
+    if (userScores.diplomaGrade) {
+      setDiplomaGrade(userScores.diplomaGrade);
+    }
+  }, [userScores, scoreType]);
+
+  const handleSelectScoreType = (type: ScoreType) => {
+    setScoreType(type);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

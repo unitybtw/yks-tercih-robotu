@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScoreType, UserScores } from '../types';
 import { Award, Zap, TrendingUp, Edit3, Check } from 'lucide-react';
 
@@ -29,6 +29,10 @@ export const ScoreBanner: React.FC<ScoreBannerProps> = ({
       : userScores.tytRank;
 
   const [tempRank, setTempRank] = useState(currentRank > 0 ? currentRank.toString() : '');
+
+  useEffect(() => {
+    setTempRank(currentRank > 0 ? currentRank.toString() : '');
+  }, [currentRank, userScores.activeScoreType]);
 
   const currentScore =
     userScores.activeScoreType === 'SAY'

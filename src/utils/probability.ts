@@ -6,16 +6,16 @@ export const calculateProbability = (
 ): ProbabilityAnalysis => {
   if (!userRank || userRank <= 0) {
     return {
-      percentage: 50,
+      percentage: 0,
       category: 'dengeli',
-      categoryTitle: 'Sıralama Belirtilmedi',
+      categoryTitle: 'Sıralama Girilmedi',
       categoryColor: 'bg-slate-500 text-white',
       trendSlope: 'stabil',
       trendText: 'Stabil',
       rankDiff: 0,
       rankDiffPercentage: 0,
       advice: 'Lütfen netlerinizi hesaplayın veya tahmini YKS sıralamanızı girin.',
-      riskScore: 5,
+      riskScore: 0,
     };
   }
 
@@ -24,7 +24,7 @@ export const calculateProbability = (
 
   if (actualHistory.length === 0) {
     return {
-      percentage: 50,
+      percentage: 0,
       category: 'dengeli',
       categoryTitle: 'Veri Yetersiz',
       categoryColor: 'bg-slate-500 text-white',
@@ -33,7 +33,7 @@ export const calculateProbability = (
       rankDiff: 0,
       rankDiffPercentage: 0,
       advice: 'Bu bölüm için geçmiş yıllara ait yeterli taban sıralama verisi bulunamadı.',
-      riskScore: 5,
+      riskScore: 0,
     };
   }
 
@@ -41,24 +41,25 @@ export const calculateProbability = (
   const oldestData = actualHistory[0];
   const lastYearRank = latest2024Data.baseRank; // 2024 gerçek taban sıralama
 
-  // Yıllık Sıralama Değişim Eğimi
+  // Yıllık Sıralama Değişim Eğimi (Hem mutlak hem oransal)
   const yearsDelta = actualHistory.length > 1 ? actualHistory.length - 1 : 1;
   const annualRankShift = (lastYearRank - oldestData.baseRank) / yearsDelta;
+  const annualRelativeShift = oldestData.baseRank > 0 ? (lastYearRank - oldestData.baseRank) / oldestData.baseRank / yearsDelta : 0;
 
   let trendSlope: ProbabilityAnalysis['trendSlope'] = 'stabil';
   let trendText = 'Stabil Seyrediyor';
 
   // Sıralama sayısının küçülmesi (negatif shift) -> Bölüm popülerleşiyor, sıralama yükseliyor!
-  if (annualRankShift < -2500) {
+  if (annualRelativeShift < -0.15 || annualRankShift < -5000) {
     trendSlope = 'hizli_yukselis';
     trendText = 'Hızla Yükselişte (Zorlaşıyor)';
-  } else if (annualRankShift < -400) {
+  } else if (annualRelativeShift < -0.04 || annualRankShift < -1000) {
     trendSlope = 'hafif_yukselis';
     trendText = 'Yükseliş Trendinde (Talep Artıyor)';
-  } else if (annualRankShift > 2500) {
+  } else if (annualRelativeShift > 0.15 || annualRankShift > 5000) {
     trendSlope = 'hizli_dusus';
     trendText = 'Sıralaması Geriliyor (Kolaylaşıyor)';
-  } else if (annualRankShift > 400) {
+  } else if (annualRelativeShift > 0.04 || annualRankShift > 1000) {
     trendSlope = 'hafif_dusus';
     trendText = 'Hafif Geri Çekilme Var';
   }

@@ -116,12 +116,12 @@ export function App() {
       : userScores.tytRank;
 
   const getRankForDept = (scoreType?: ScoreType) => {
-    if (scoreType === 'SAY') return userScores.sayRank || 24500;
-    if (scoreType === 'EA') return userScores.eaRank || 18000;
-    if (scoreType === 'SOZ') return userScores.sozRank || 8500;
-    if (scoreType === 'DIL') return userScores.dilRank || 4500;
-    if (scoreType === 'TYT') return userScores.tytRank || 95000;
-    return activeRank;
+    if (scoreType === 'SAY') return userScores.sayRank || 0;
+    if (scoreType === 'EA') return userScores.eaRank || 0;
+    if (scoreType === 'SOZ') return userScores.sozRank || 0;
+    if (scoreType === 'DIL') return userScores.dilRank || 0;
+    if (scoreType === 'TYT') return userScores.tytRank || 0;
+    return activeRank || 0;
   };
 
   const modalUserRank = selectedDept

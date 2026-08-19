@@ -75,24 +75,36 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
     const minCustom = minRankFilter ? parseInt(minRankFilter.replace(/\./g, '')) : null;
     const maxCustom = maxRankFilter ? parseInt(maxRankFilter.replace(/\./g, '')) : null;
 
+    const normalizeText = (text: string) =>
+      text
+        .toLocaleLowerCase('tr-TR')
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ö/g, 'o')
+        .replace(/ç/g, 'c')
+        .trim();
+
+    const normalizedQuery = normalizeText(searchQuery);
+
     return DEPARTMENTS_DATA.filter((dept) => {
       const deptUserRank = getUserRankForDept(dept.scoreType);
       const prob = calculateProbability(deptUserRank, dept);
-      const latest2024 = dept.history[dept.history.length - 2]?.baseRank || dept.history[dept.history.length - 1].baseRank;
+      const latest2024 = dept.history.find((h) => h.year === 2024)?.baseRank || dept.history[dept.history.length - 2]?.baseRank || dept.history[dept.history.length - 1].baseRank;
 
       // Özel Min/Max Sıralama Filtresi
       if (minCustom !== null && latest2024 < minCustom) return false;
       if (maxCustom !== null && latest2024 > maxCustom) return false;
 
-      // Arama sorgusu
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      // Arama sorgusu (Türkçe karakter duyarsız)
+      if (normalizedQuery) {
         const match =
-          dept.departmentName.toLowerCase().includes(q) ||
-          dept.universityName.toLowerCase().includes(q) ||
-          dept.city.toLowerCase().includes(q) ||
-          dept.code.includes(q) ||
-          dept.tags?.some((t) => t.toLowerCase().includes(q));
+          normalizeText(dept.departmentName).includes(normalizedQuery) ||
+          normalizeText(dept.universityName).includes(normalizedQuery) ||
+          normalizeText(dept.city).includes(normalizedQuery) ||
+          dept.code.includes(normalizedQuery) ||
+          dept.tags?.some((t) => normalizeText(t).includes(normalizedQuery));
         if (!match) return false;
       }
 
@@ -138,16 +150,20 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
       const userRankB = getUserRankForDept(b.scoreType);
       const probA = calculateProbability(userRankA, a).percentage;
       const probB = calculateProbability(userRankB, b).percentage;
-      const rankA = a.history[a.history.length - 2]?.baseRank || 0;
-      const rankB = b.history[b.history.length - 2]?.baseRank || 0;
-      const scoreA = a.history[a.history.length - 2]?.baseScore || 0;
-      const scoreB = b.history[b.history.length - 2]?.baseScore || 0;
+      const rankA = a.history.find((h) => h.year === 2024)?.baseRank || a.history[a.history.length - 2]?.baseRank || 0;
+      const rankB = b.history.find((h) => h.year === 2024)?.baseRank || b.history[b.history.length - 2]?.baseRank || 0;
+      const scoreA = a.history.find((h) => h.year === 2024)?.baseScore || a.history[a.history.length - 2]?.baseScore || 0;
+      const scoreB = b.history.find((h) => h.year === 2024)?.baseScore || b.history[b.history.length - 2]?.baseScore || 0;
 
       if (sortBy === 'prob_desc') return probB - probA;
-      if (sortBy === 'rank_asc') return rankA - rankB;
+      if (sortBy === 'rank_asc') {
+        if (rankA === 0) return 1;
+        if (rankB === 0) return -1;
+        return rankA - rankB;
+      }
       if (sortBy === 'rank_desc') return rankB - rankA;
       if (sortBy === 'score_desc') return scoreB - scoreA;
-      if (sortBy === 'name_asc') return a.departmentName.localeCompare(b.departmentName);
+      if (sortBy === 'name_asc') return a.departmentName.localeCompare(b.departmentName, 'tr-TR');
       return 0;
     });
   }, [

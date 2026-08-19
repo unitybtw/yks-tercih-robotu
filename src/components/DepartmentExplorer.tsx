@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
 import {
   Department,
   UserScores,
@@ -37,6 +37,8 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
   onTogglePreference,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
   const [selectedScoreType, setSelectedScoreType] = useState<string>(userScores.activeScoreType || 'SAY');
   const [selectedCity, setSelectedCity] = useState<string>('Tümü');
   const [selectedUnivType, setSelectedUnivType] = useState<string>('Tümü');
@@ -70,6 +72,21 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
     activeRank > 0 ? 'recommended' : 'all'
   );
 
+  // Filtreler veya arama değiştiğinde sayfalama sayacını sıfırla
+  useEffect(() => {
+    setVisibleCount(36);
+  }, [
+    deferredSearchQuery,
+    selectedScoreType,
+    selectedCity,
+    selectedUnivType,
+    selectedScholarship,
+    categoryFilter,
+    minRankFilter,
+    maxRankFilter,
+    sortBy,
+  ]);
+
   // Filtreleme ve Sıralama
   const filteredDepartments = useMemo(() => {
     const minCustom = minRankFilter ? parseInt(minRankFilter.replace(/\./g, '')) : null;
@@ -86,7 +103,7 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
         .replace(/ç/g, 'c')
         .trim();
 
-    const normalizedQuery = normalizeText(searchQuery);
+    const normalizedQuery = normalizeText(deferredSearchQuery);
 
     return DEPARTMENTS_DATA.filter((dept) => {
       const deptUserRank = getUserRankForDept(dept.scoreType);
@@ -484,14 +501,23 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
                 onClick={() => setVisibleCount((prev) => prev + 48)}
                 className="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs shadow-lg shadow-brand-600/30 transition-all hover:scale-[1.02]"
               >
-                Daha Fazla Göster (+48 Bölüm)
+                Daha Fazla Göster (+48)
               </button>
-              <button
-                onClick={() => setVisibleCount(filteredDepartments.length)}
-                className="px-6 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-xs shadow-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-              >
-                Tümünü Göster ({filteredDepartments.length} Bölüm)
-              </button>
+              {filteredDepartments.length <= 300 ? (
+                <button
+                  onClick={() => setVisibleCount(filteredDepartments.length)}
+                  className="px-6 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-xs shadow-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                >
+                  Tümünü Göster ({filteredDepartments.length} Bölüm)
+                </button>
+              ) : (
+                <button
+                  onClick={() => setVisibleCount((prev) => Math.min(filteredDepartments.length, prev + 120))}
+                  className="px-6 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-xs shadow-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                >
+                  Hızlı Yükle (+120 Bölüm)
+                </button>
+              )}
             </div>
           )}
         </div>

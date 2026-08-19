@@ -21,7 +21,7 @@ interface DepartmentCardProps {
   onTogglePreference: (dept: Department) => void;
 }
 
-export const DepartmentCard: React.FC<DepartmentCardProps> = ({
+export const DepartmentCard: React.FC<DepartmentCardProps> = React.memo(({
   department,
   probability,
   userRank,
@@ -179,4 +179,4 @@ export const DepartmentCard: React.FC<DepartmentCardProps> = ({
 
     </div>
   );
-};
+});

@@ -43,52 +43,136 @@ export const NetCalculator: React.FC<NetCalculatorProps> = ({
 
   // TYT State
   const [tyt, setTyt] = useState<TytNets>({
-    turkce: { correct: 32, incorrect: 5 },
+    turkce: { correct: 0, incorrect: 0 },
     sosyal: {
-      tarih: { correct: 4, incorrect: 1 },
-      cografya: { correct: 4, incorrect: 1 },
-      felsefe: { correct: 3, incorrect: 1 },
-      din: { correct: 4, incorrect: 1 },
+      tarih: { correct: 0, incorrect: 0 },
+      cografya: { correct: 0, incorrect: 0 },
+      felsefe: { correct: 0, incorrect: 0 },
+      din: { correct: 0, incorrect: 0 },
     },
-    matematik: { correct: 28, incorrect: 4 },
+    matematik: { correct: 0, incorrect: 0 },
     fen: {
-      fizik: { correct: 5, incorrect: 2 },
-      kimya: { correct: 5, incorrect: 1 },
-      biyoloji: { correct: 4, incorrect: 2 },
+      fizik: { correct: 0, incorrect: 0 },
+      kimya: { correct: 0, incorrect: 0 },
+      biyoloji: { correct: 0, incorrect: 0 },
     },
   });
 
   // AYT SAY State
   const [aytSay, setAytSay] = useState<AytSayNets>({
-    matematik: { correct: 30, incorrect: 4 },
-    fizik: { correct: 10, incorrect: 2 },
-    kimya: { correct: 9, incorrect: 2 },
-    biyoloji: { correct: 9, incorrect: 2 },
+    matematik: { correct: 0, incorrect: 0 },
+    fizik: { correct: 0, incorrect: 0 },
+    kimya: { correct: 0, incorrect: 0 },
+    biyoloji: { correct: 0, incorrect: 0 },
   });
 
   // AYT EA State
   const [aytEa, setAytEa] = useState<AytEaNets>({
-    matematik: { correct: 26, incorrect: 4 },
-    edebiyat: { correct: 19, incorrect: 3 },
-    tarih1: { correct: 7, incorrect: 2 },
-    cografya1: { correct: 4, incorrect: 1 },
+    matematik: { correct: 0, incorrect: 0 },
+    edebiyat: { correct: 0, incorrect: 0 },
+    tarih1: { correct: 0, incorrect: 0 },
+    cografya1: { correct: 0, incorrect: 0 },
   });
 
   // AYT SOZ State
   const [aytSoz, setAytSoz] = useState<AytSozNets>({
-    edebiyat: { correct: 20, incorrect: 2 },
-    tarih1: { correct: 8, incorrect: 1 },
-    cografya1: { correct: 5, incorrect: 1 },
-    tarih2: { correct: 8, incorrect: 2 },
-    cografya2: { correct: 8, incorrect: 2 },
-    felsefe: { correct: 9, incorrect: 2 },
-    din: { correct: 5, incorrect: 1 },
+    edebiyat: { correct: 0, incorrect: 0 },
+    tarih1: { correct: 0, incorrect: 0 },
+    cografya1: { correct: 0, incorrect: 0 },
+    tarih2: { correct: 0, incorrect: 0 },
+    cografya2: { correct: 0, incorrect: 0 },
+    felsefe: { correct: 0, incorrect: 0 },
+    din: { correct: 0, incorrect: 0 },
   });
 
   // YDT State
   const [ydt, setYdt] = useState<YdtNets>({
-    dil: { correct: 68, incorrect: 6 },
+    dil: { correct: 0, incorrect: 0 },
   });
+
+  const handleFillSample = () => {
+    setTyt({
+      turkce: { correct: 32, incorrect: 5 },
+      sosyal: {
+        tarih: { correct: 4, incorrect: 1 },
+        cografya: { correct: 4, incorrect: 1 },
+        felsefe: { correct: 3, incorrect: 1 },
+        din: { correct: 4, incorrect: 1 },
+      },
+      matematik: { correct: 28, incorrect: 4 },
+      fen: {
+        fizik: { correct: 5, incorrect: 2 },
+        kimya: { correct: 5, incorrect: 1 },
+        biyoloji: { correct: 4, incorrect: 2 },
+      },
+    });
+    setAytSay({
+      matematik: { correct: 30, incorrect: 4 },
+      fizik: { correct: 10, incorrect: 2 },
+      kimya: { correct: 9, incorrect: 2 },
+      biyoloji: { correct: 9, incorrect: 2 },
+    });
+    setAytEa({
+      matematik: { correct: 26, incorrect: 4 },
+      edebiyat: { correct: 19, incorrect: 3 },
+      tarih1: { correct: 7, incorrect: 2 },
+      cografya1: { correct: 4, incorrect: 1 },
+    });
+    setAytSoz({
+      edebiyat: { correct: 20, incorrect: 2 },
+      tarih1: { correct: 8, incorrect: 1 },
+      cografya1: { correct: 5, incorrect: 1 },
+      tarih2: { correct: 8, incorrect: 2 },
+      cografya2: { correct: 8, incorrect: 2 },
+      felsefe: { correct: 9, incorrect: 2 },
+      din: { correct: 5, incorrect: 1 },
+    });
+    setYdt({
+      dil: { correct: 68, incorrect: 6 },
+    });
+  };
+
+  const handleReset = () => {
+    setTyt({
+      turkce: { correct: 0, incorrect: 0 },
+      sosyal: {
+        tarih: { correct: 0, incorrect: 0 },
+        cografya: { correct: 0, incorrect: 0 },
+        felsefe: { correct: 0, incorrect: 0 },
+        din: { correct: 0, incorrect: 0 },
+      },
+      matematik: { correct: 0, incorrect: 0 },
+      fen: {
+        fizik: { correct: 0, incorrect: 0 },
+        kimya: { correct: 0, incorrect: 0 },
+        biyoloji: { correct: 0, incorrect: 0 },
+      },
+    });
+    setAytSay({
+      matematik: { correct: 0, incorrect: 0 },
+      fizik: { correct: 0, incorrect: 0 },
+      kimya: { correct: 0, incorrect: 0 },
+      biyoloji: { correct: 0, incorrect: 0 },
+    });
+    setAytEa({
+      matematik: { correct: 0, incorrect: 0 },
+      edebiyat: { correct: 0, incorrect: 0 },
+      tarih1: { correct: 0, incorrect: 0 },
+      cografya1: { correct: 0, incorrect: 0 },
+    });
+    setAytSoz({
+      edebiyat: { correct: 0, incorrect: 0 },
+      tarih1: { correct: 0, incorrect: 0 },
+      cografya1: { correct: 0, incorrect: 0 },
+      tarih2: { correct: 0, incorrect: 0 },
+      cografya2: { correct: 0, incorrect: 0 },
+      felsefe: { correct: 0, incorrect: 0 },
+      din: { correct: 0, incorrect: 0 },
+    });
+    setYdt({
+      dil: { correct: 0, incorrect: 0 },
+    });
+  };
 
   // Hesaplamaları yap
   const tytResult = calculateTytScore(tyt, diplomaGrade, isBrokenObp);
@@ -139,48 +223,6 @@ export const NetCalculator: React.FC<NetCalculatorProps> = ({
     });
 
     onExploreDepartments();
-  };
-
-  const handleReset = () => {
-    setTyt({
-      turkce: { correct: 0, incorrect: 0 },
-      sosyal: {
-        tarih: { correct: 0, incorrect: 0 },
-        cografya: { correct: 0, incorrect: 0 },
-        felsefe: { correct: 0, incorrect: 0 },
-        din: { correct: 0, incorrect: 0 },
-      },
-      matematik: { correct: 0, incorrect: 0 },
-      fen: {
-        fizik: { correct: 0, incorrect: 0 },
-        kimya: { correct: 0, incorrect: 0 },
-        biyoloji: { correct: 0, incorrect: 0 },
-      },
-    });
-    setAytSay({
-      matematik: { correct: 0, incorrect: 0 },
-      fizik: { correct: 0, incorrect: 0 },
-      kimya: { correct: 0, incorrect: 0 },
-      biyoloji: { correct: 0, incorrect: 0 },
-    });
-    setAytEa({
-      matematik: { correct: 0, incorrect: 0 },
-      edebiyat: { correct: 0, incorrect: 0 },
-      tarih1: { correct: 0, incorrect: 0 },
-      cografya1: { correct: 0, incorrect: 0 },
-    });
-    setAytSoz({
-      edebiyat: { correct: 0, incorrect: 0 },
-      tarih1: { correct: 0, incorrect: 0 },
-      cografya1: { correct: 0, incorrect: 0 },
-      tarih2: { correct: 0, incorrect: 0 },
-      cografya2: { correct: 0, incorrect: 0 },
-      felsefe: { correct: 0, incorrect: 0 },
-      din: { correct: 0, incorrect: 0 },
-    });
-    setYdt({
-      dil: { correct: 0, incorrect: 0 },
-    });
   };
 
   // Helper input bileşeni
@@ -663,11 +705,20 @@ export const NetCalculator: React.FC<NetCalculatorProps> = ({
             </div>
           )}
 
-          {/* Hızlı Temizle Butonu */}
-          <div className="flex justify-end">
+          {/* Hızlı Aksiyon Butonları */}
+          <div className="flex items-center justify-between pt-2">
             <button
+              type="button"
+              onClick={handleFillSample}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-brand-700 dark:text-brand-300 bg-brand-100/80 dark:bg-brand-950/60 border border-brand-300 dark:border-brand-800 hover:bg-brand-200 dark:hover:bg-brand-900 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+              <span>Örnek Netleri Doldur</span>
+            </button>
+            <button
+              type="button"
               onClick={handleReset}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Tüm Netleri Sıfırla</span>

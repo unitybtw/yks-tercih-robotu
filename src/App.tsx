@@ -42,18 +42,18 @@ export function App() {
       }
     }
     return {
-      diplomaGrade: 85,
+      diplomaGrade: 80,
       isBrokenObp: false,
-      tytScore: 412.5,
-      sayScore: 472.8,
-      eaScore: 435.2,
-      sozScore: 420.0,
-      dilScore: 450.0,
-      tytRank: 42000,
-      sayRank: 24500,
-      eaRank: 18000,
-      sozRank: 8500,
-      dilRank: 4500,
+      tytScore: 0,
+      sayScore: 0,
+      eaScore: 0,
+      sozScore: 0,
+      dilScore: 0,
+      tytRank: 0,
+      sayRank: 0,
+      eaRank: 0,
+      sozRank: 0,
+      dilRank: 0,
       activeScoreType: 'SAY',
     };
   });

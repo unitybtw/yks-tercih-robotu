@@ -28,7 +28,7 @@ export const ScoreBanner: React.FC<ScoreBannerProps> = ({
       ? userScores.dilRank
       : userScores.tytRank;
 
-  const [tempRank, setTempRank] = useState(currentRank.toString());
+  const [tempRank, setTempRank] = useState(currentRank > 0 ? currentRank.toString() : '');
 
   const currentScore =
     userScores.activeScoreType === 'SAY'
@@ -45,7 +45,7 @@ export const ScoreBanner: React.FC<ScoreBannerProps> = ({
 
   const handleSaveInlineRank = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const rankNum = parseInt(tempRank.replace(/\./g, '').replace(/,/g, '')) || 25000;
+    const rankNum = parseInt(tempRank.replace(/\./g, '').replace(/,/g, '')) || 0;
     setUserScores((prev) => {
       const updated = { ...prev };
       if (prev.activeScoreType === 'SAY') updated.sayRank = rankNum;
@@ -88,10 +88,11 @@ export const ScoreBanner: React.FC<ScoreBannerProps> = ({
                       type="number"
                       min={1}
                       max={3000000}
+                      placeholder="Örn: 24500"
                       autoFocus
                       value={tempRank}
                       onChange={(e) => setTempRank(e.target.value)}
-                      className="w-28 px-2 py-1 bg-slate-950 border border-brand-500 rounded-lg text-lg font-black text-white focus:outline-none"
+                      className="w-32 px-2.5 py-1 bg-slate-950 border border-brand-500 rounded-lg text-base font-black text-white focus:outline-none placeholder-slate-500"
                     />
                     <button
                       type="submit"
@@ -103,15 +104,21 @@ export const ScoreBanner: React.FC<ScoreBannerProps> = ({
                 ) : (
                   <div
                     onClick={() => {
-                      setTempRank(currentRank.toString());
+                      setTempRank(currentRank > 0 ? currentRank.toString() : '');
                       setIsEditingRank(true);
                     }}
                     className="flex items-center space-x-1.5 cursor-pointer group"
                     title="Sıralamanızı hızlıca değiştirmek için tıklayın"
                   >
-                    <span className="text-2xl sm:text-3xl font-black text-white tracking-tight group-hover:text-brand-400 transition-colors">
-                      {currentRank > 0 ? `${currentRank.toLocaleString('tr-TR')}.` : 'Belirtilmedi'}
-                    </span>
+                    {currentRank > 0 ? (
+                      <span className="text-2xl sm:text-3xl font-black text-white tracking-tight group-hover:text-brand-400 transition-colors">
+                        {currentRank.toLocaleString('tr-TR')}.
+                      </span>
+                    ) : (
+                      <span className="text-base sm:text-lg font-extrabold text-amber-400 group-hover:text-amber-300 underline underline-offset-4 decoration-amber-400/50 transition-colors">
+                        Henüz Girilmedi (Girmek için tıklayın)
+                      </span>
+                    )}
                     <Edit3 className="w-4 h-4 text-slate-400 group-hover:text-brand-400 opacity-60 group-hover:opacity-100 transition-all" />
                   </div>
                 )}

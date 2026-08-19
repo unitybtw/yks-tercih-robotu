@@ -41,7 +41,19 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
   const [selectedCity, setSelectedCity] = useState<string>('Tümü');
   const [selectedUnivType, setSelectedUnivType] = useState<string>('Tümü');
   const [selectedScholarship, setSelectedScholarship] = useState<string>('Tümü');
-  const [categoryFilter, setCategoryFilter] = useState<'all' | 'recommended' | 'garanti' | 'ideal' | 'riskli_hayal'>('recommended');
+  const getUserRankForDept = (scoreType: ScoreType): number => {
+    if (scoreType === 'SAY') return userScores.sayRank || 0;
+    if (scoreType === 'EA') return userScores.eaRank || 0;
+    if (scoreType === 'SOZ') return userScores.sozRank || 0;
+    if (scoreType === 'DIL') return userScores.dilRank || 0;
+    return userScores.tytRank || 0;
+  };
+
+  const activeRank =
+    selectedScoreType !== 'Tümü'
+      ? getUserRankForDept(selectedScoreType as ScoreType)
+      : getUserRankForDept(userScores.activeScoreType);
+
   const [sortBy, setSortBy] = useState<'prob_desc' | 'rank_asc' | 'rank_desc' | 'score_desc' | 'name_asc'>('rank_asc');
   const [minRankFilter, setMinRankFilter] = useState<string>('');
   const [maxRankFilter, setMaxRankFilter] = useState<string>('');
@@ -54,19 +66,9 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
     }
   }, [userScores.activeScoreType]);
 
-  // Her bölüm için o alandaki kullanıcı sıralamasını getiren fonksiyon
-  const getUserRankForDept = (scoreType: ScoreType): number => {
-    if (scoreType === 'SAY') return userScores.sayRank || 24500;
-    if (scoreType === 'EA') return userScores.eaRank || 18000;
-    if (scoreType === 'SOZ') return userScores.sozRank || 8500;
-    if (scoreType === 'DIL') return userScores.dilRank || 4500;
-    return userScores.tytRank || 95000;
-  };
-
-  const activeRank =
-    selectedScoreType !== 'Tümü'
-      ? getUserRankForDept(selectedScoreType as ScoreType)
-      : getUserRankForDept(userScores.activeScoreType);
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'recommended' | 'garanti' | 'ideal' | 'riskli_hayal'>(
+    activeRank > 0 ? 'recommended' : 'all'
+  );
 
   // Filtreleme ve Sıralama
   const filteredDepartments = useMemo(() => {
@@ -116,7 +118,7 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
 
       // Akıllı Kategori / Sıralama Yelpaze Filtresi
       if (categoryFilter === 'recommended') {
-        // Sıralamanın %25'i ile 2.5 katı veya +400k arasındaki bölümler
+        if (deptUserRank <= 0) return true; // Sıralama girilmediyse hepsini göster
         const minRank = Math.max(1, Math.round(deptUserRank * 0.25));
         const maxRank = Math.max(Math.round(deptUserRank * 2.5), deptUserRank + 400000);
         if (latest2024 < minRank || latest2024 > maxRank) {
@@ -195,7 +197,13 @@ export const DepartmentExplorer: React.FC<DepartmentExplorerProps> = ({
             <div>
               <span className="text-xs text-slate-400 font-semibold block">Aktif İhtimal Analizi:</span>
               <div className="text-base sm:text-lg font-black text-white">
-                {activeRank.toLocaleString('tr-TR')}. Sıralama ({selectedScoreType})
+                {activeRank > 0 ? (
+                  `${activeRank.toLocaleString('tr-TR')}. Sıralama (${selectedScoreType})`
+                ) : (
+                  <span className="text-amber-400 font-extrabold text-sm sm:text-base">
+                    Henüz Sıralama Girilmedi ({selectedScoreType})
+                  </span>
+                )}
               </div>
             </div>
           </div>

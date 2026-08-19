@@ -17,35 +17,40 @@ export const DirectRankInput: React.FC<DirectRankInputProps> = ({
   const [scoreType, setScoreType] = useState<ScoreType>(userScores.activeScoreType || 'SAY');
   
   const getRankForType = (type: ScoreType) => {
-    if (type === 'SAY') return userScores.sayRank || 24500;
-    if (type === 'EA') return userScores.eaRank || 18000;
-    if (type === 'SOZ') return userScores.sozRank || 8500;
-    if (type === 'DIL') return userScores.dilRank || 4500;
-    return userScores.tytRank || 95000;
+    if (type === 'SAY') return userScores.sayRank || 0;
+    if (type === 'EA') return userScores.eaRank || 0;
+    if (type === 'SOZ') return userScores.sozRank || 0;
+    if (type === 'DIL') return userScores.dilRank || 0;
+    return userScores.tytRank || 0;
   };
 
   const getScoreForType = (type: ScoreType) => {
-    if (type === 'SAY') return userScores.sayScore || 465;
-    if (type === 'EA') return userScores.eaScore || 440;
-    if (type === 'SOZ') return userScores.sozScore || 430;
-    if (type === 'DIL') return userScores.dilScore || 470;
-    return userScores.tytScore || 390;
+    if (type === 'SAY') return userScores.sayScore || 0;
+    if (type === 'EA') return userScores.eaScore || 0;
+    if (type === 'SOZ') return userScores.sozScore || 0;
+    if (type === 'DIL') return userScores.dilScore || 0;
+    return userScores.tytScore || 0;
   };
 
-  const [rankInput, setRankInput] = useState<string>(getRankForType(userScores.activeScoreType || 'SAY').toString());
-  const [scoreInput, setScoreInput] = useState<string>(getScoreForType(userScores.activeScoreType || 'SAY').toString());
-  const [diplomaGrade, setDiplomaGrade] = useState<number>(userScores.diplomaGrade || 85);
+  const initialRank = getRankForType(userScores.activeScoreType || 'SAY');
+  const initialScore = getScoreForType(userScores.activeScoreType || 'SAY');
+
+  const [rankInput, setRankInput] = useState<string>(initialRank > 0 ? initialRank.toString() : '');
+  const [scoreInput, setScoreInput] = useState<string>(initialScore > 0 ? initialScore.toString() : '');
+  const [diplomaGrade, setDiplomaGrade] = useState<number>(userScores.diplomaGrade || 80);
 
   const handleSelectScoreType = (type: ScoreType) => {
     setScoreType(type);
-    setRankInput(getRankForType(type).toString());
-    setScoreInput(getScoreForType(type).toString());
+    const r = getRankForType(type);
+    const s = getScoreForType(type);
+    setRankInput(r > 0 ? r.toString() : '');
+    setScoreInput(s > 0 ? s.toString() : '');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const rank = parseInt(rankInput.replace(/\./g, '').replace(/,/g, '')) || 50000;
-    const score = parseFloat(scoreInput) || 400;
+    const rank = parseInt(rankInput.replace(/\./g, '').replace(/,/g, '')) || 0;
+    const score = parseFloat(scoreInput) || 0;
 
     setUserScores((prev) => {
       const updated = { ...prev, activeScoreType: scoreType, diplomaGrade };
